@@ -21,6 +21,9 @@ void main() async {
         BlocProvider.value(
           value: serviceLocator<WelcomeBloc>(),
         ),
+        BlocProvider.value(
+          value: serviceLocator<SignUpBloc>(),
+        ),
       ],
       child: MyApp(navigatorKey: navigatorKey),
     ),

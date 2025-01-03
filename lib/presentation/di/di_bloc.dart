@@ -8,4 +8,9 @@ Future<void> initializeBlocs() async {
       welcomeUseCase: serviceLocator(),
     ),
   );
+  serviceLocator.registerLazySingleton(
+    () => SignUpBloc(
+      welcomeUseCase: serviceLocator(),
+    ),
+  );
 }
