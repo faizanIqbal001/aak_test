@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:aak_test/export.dart';
 
-class SimpleTextField extends StatelessWidget {
+class CommonTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
   final String? hintText;
@@ -11,7 +11,7 @@ class SimpleTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
 
-  const SimpleTextField({
+  const CommonTextField({
     Key? key,
     required this.controller,
     required this.labelText,
@@ -37,6 +37,12 @@ class SimpleTextField extends StatelessWidget {
         ),
         const SizedBox(height: 5),
         TextFormField(
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Value Cannot be Empty!';
+            }
+            return null;
+          },
           controller: controller,
           focusNode: focusNode,
           obscureText: obscureText,
