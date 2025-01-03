@@ -16,3 +16,23 @@ class ChangeSelectedUserType extends SignUpEvent {
 
   ChangeSelectedUserType({required this.selectedUserType});
 }
+
+class SignUpUser extends SignUpEvent {
+  final String email;
+  final String password;
+  final String firstName;
+  final String lastName;
+  final String userName;
+  final String userType;
+  final String country;
+
+  SignUpUser({
+    required this.email,
+    required this.password,
+    required this.firstName,
+    required this.lastName,
+    required this.userName,
+    required this.userType,
+    required this.country,
+  });
+}

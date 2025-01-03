@@ -10,7 +10,7 @@ Future<void> initializeBlocs() async {
   );
   serviceLocator.registerLazySingleton(
     () => SignUpBloc(
-      welcomeUseCase: serviceLocator(),
+      authUseCase: serviceLocator(),
     ),
   );
 }

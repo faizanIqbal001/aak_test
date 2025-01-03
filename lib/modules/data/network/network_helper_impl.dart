@@ -13,20 +13,18 @@ class NetworkHelperImpl extends NetworkHelper {
     required this.onClientExpire,
     required this.client,
     required this.dio,
-    required this.onGettingServerException,
   });
 
   final Function onTokenExpire;
   final Function onClientExpire;
   final http.Client client;
   final Dio dio;
-  final Function(String exception) onGettingServerException;
 
   @override
   Future<Either<String, GenericError>> get(
-      String url, {
-        Map<String, String>? headers,
-      }) async {
+    String url, {
+    Map<String, String>? headers,
+  }) async {
     debugPrint('GET--> URL: $url');
     try {
       final response = await client.get(
@@ -43,16 +41,16 @@ class NetworkHelperImpl extends NetworkHelper {
     } catch (e) {
       if (e is SocketException || e is http.ClientException) {
         _clientExceptionLogs(e);
-        return const Right(
+        return Right(
           GenericError(
-            status: false,
+            statusCode: 404,
             message: 'Please check you internet and try again',
           ),
         );
       }
       return Right(
         GenericError(
-          status: false,
+          statusCode: 404,
           message: e.toString(),
         ),
       );
@@ -61,13 +59,13 @@ class NetworkHelperImpl extends NetworkHelper {
 
   @override
   Future<Either<String, GenericError>> post(
-      String url, {
-        Map<String, String>? headers,
-        dynamic body,
-        dynamic encoding,
-        bool modifyHeader = true,
-        bool encodeBody = true,
-      }) async {
+    String url, {
+    Map<String, String>? headers,
+    dynamic body,
+    dynamic encoding,
+    bool modifyHeader = true,
+    bool encodeBody = true,
+  }) async {
     try {
       debugPrint('POST--> URL: $url');
       debugPrint('POST--> BODY: ${json.encode(body)}');
@@ -97,120 +95,17 @@ class NetworkHelperImpl extends NetworkHelper {
     } catch (e) {
       final internet = await _checkInternetConnection();
       if (e is SocketException || !internet) {
-        return const Right(
+        return Right(
           GenericError(
-            status: false,
+            statusCode: 404,
             message: 'Please check you internet and try again',
           ),
         );
       }
 
-      if (e is http.ClientException) {
-        _clientExceptionLogs(e);
-        onClientExpire();
-        return Right(
-          GenericError(
-            status: false,
-            message: e.toString(),
-          ),
-        );
-      }
-
       return Right(
         GenericError(
-          status: false,
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  @override
-  Future<Either<String, GenericError>> multipart(
-      String url, {
-        Map<String, String>? headers,
-        dynamic body,
-        dynamic files,
-      }) async {
-    try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse(url),
-      );
-
-      print('url: $url');
-
-      // Add body fields to the request
-      if (body != null) {
-        body.forEach((dynamic key, dynamic value) {
-          request.fields[key] = value;
-        });
-      }
-
-      // Add headers to the request
-      headers?.forEach((key, value) {
-        request.headers[key] = value;
-      });
-
-      // Add files to the request
-      if (files != null) {
-        for (var entry in files.entries) {
-          final fileField = entry.key;
-          final filePath = entry.value;
-
-          if (filePath != null) {
-            request.files.add(
-              await http.MultipartFile.fromPath(
-                fileField,
-                filePath,
-                // Optional: you can specify the content type if known
-                //  contentType: MediaType('image', 'jpeg'), // for example, for JPEG images
-              ),
-            );
-          }
-        }
-      }
-
-      final response = await request.send();
-      final responseText = await response.stream.bytesToString();
-      final statusCode = response.statusCode;
-
-      print('responseText: $responseText');
-
-      if (statusCode >= 400) {
-        return const Right(
-          GenericError(
-            status: false,
-            message: 'Something went wrong',
-          ),
-        );
-      } else {
-        return Left(responseText);
-      }
-    } catch (e) {
-      final internet = await _checkInternetConnection();
-      if (e is SocketException || !internet) {
-        return const Right(
-          GenericError(
-            status: false,
-            message: 'Please check your internet and try again',
-          ),
-        );
-      }
-
-      if (e is http.ClientException) {
-        _clientExceptionLogs(e);
-        onClientExpire();
-        return Right(
-          GenericError(
-            status: false,
-            message: e.toString(),
-          ),
-        );
-      }
-      return Right(
-        GenericError(
-          status: false,
+          statusCode: 404,
           message: e.toString(),
         ),
       );
@@ -219,10 +114,10 @@ class NetworkHelperImpl extends NetworkHelper {
 
   @override
   Future<Either<String, GenericError>> delete(
-      String url, {
-        Map<String, String>? headers,
-        dynamic body,
-      }) async {
+    String url, {
+    Map<String, String>? headers,
+    dynamic body,
+  }) async {
     return client
         .delete(
       Uri.parse(url),
@@ -241,184 +136,19 @@ class NetworkHelperImpl extends NetworkHelper {
   }
 
   @override
-  Future<Either<String, GenericError>> put(
-      String url, {
-        Map<String, String>? headers,
-        dynamic body,
-        dynamic encoding,
-      }) async {
-    try {
-      debugPrint('PUT--> URL: $url');
-      debugPrint('PUT--> BODY: ${json.encode(body)}');
-      final response = await client.put(
-        Uri.parse(url),
-        body: json.encode(body),
-        headers: await appendHeader(
-          headers: headers,
-          url: url,
-        ),
-        encoding: encoding,
-      );
-      return handleResponse(
-        response: response,
-        url: url,
-      );
-    } catch (e) {
-      final internet = await _checkInternetConnection();
-      if (e is SocketException || !internet) {
-        return const Right(
-          GenericError(
-            status: false,
-            message: 'Please check you internet and try again',
-          ),
-        );
-      }
-
-      if (e is http.ClientException) {
-        _clientExceptionLogs(e);
-        onClientExpire();
-        return Right(
-          GenericError(
-            status: false,
-            message: e.toString(),
-          ),
-        );
-      }
-      return Right(
-        GenericError(
-          status: false,
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  @override
-  Future<Either<String, GenericError>> patch(
-      String url, {
-        Map<String, String>? headers,
-        dynamic body,
-        dynamic encoding,
-        bool modifyHeader = true,
-        bool encodeBody = true,
-      }) async {
-    try {
-      debugPrint('patch--> URL: $url');
-      debugPrint('patch--> BODY: ${json.encode(body)}');
-      final response = await client.patch(
-        Uri.parse(url),
-        headers: modifyHeader
-            ? await appendHeader(
-          headers: headers,
-          url: url,
-        )
-            : headers!,
-        encoding: encoding,
-        body: body == null ? null : json.encode(body),
-      );
-
-      return handleResponse(
-        response: response,
-        url: url,
-        requestBody: json.encode(
-          body,
-        ),
-      );
-    } catch (e) {
-      final internet = await _checkInternetConnection();
-      if (e is SocketException || !internet) {
-        return const Right(
-          GenericError(
-            status: false,
-            message: 'Please check you internet and try again',
-          ),
-        );
-      }
-
-      if (e is http.ClientException) {
-        _clientExceptionLogs(e);
-        onClientExpire();
-        return Right(
-          GenericError(
-            status: false,
-            message: e.toString(),
-          ),
-        );
-      }
-      return Right(
-        GenericError(
-          status: false,
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  @override
-  Future<Either<Map<String, dynamic>, GenericError>> multipartWithDio(
-      String url, {
-        dynamic formData,
-        String? header,
-      }) async {
-    try {
-      final response = await dio.request<dynamic>(
-        url,
-        data: formData,
-        options: Options(
-          method: 'POST',
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            if (header != null) 'Authorization': 'Bearer $header',
-          },
-        ),
-      );
-
-      if (response.data is Map<String, dynamic>) {
-        return Left(response.data as Map<String, dynamic>);
-      } else {
-        return const Right(
-          GenericError(
-            status: false,
-            message: 'Unexpected response format from server',
-          ),
-        );
-      }
-    } on DioException catch (e) {
-      final internet = await _checkInternetConnection();
-      if (e.type == DioExceptionType.connectionError || !internet) {
-        return const Right(
-          GenericError(
-            status: false,
-            message: 'Please check your internet connection and try again',
-          ),
-        );
-      }
-
-      return Right(
-        GenericError(
-          status: false,
-          message: e.response?.data?['message'] ?? 'Something went wrong!',
-        ),
-      );
-    }
-  }
-
-  @override
   Future<Either<String, GenericError>> handleResponse({
     http.Response? response,
     String? requestBody,
     String? url,
   }) async {
     final statusCode = response!.statusCode;
-    print('Status code $statusCode');
     if (statusCode >= 400) {
       if (statusCode >= 500) {
         final contentType = response.headers['content-type'];
         if (contentType != null && contentType.contains('text/html')) {
-          onGettingServerException('Received an html from server');
-          return const Right(
+          return Right(
             GenericError(
-              status: false,
+              statusCode: statusCode,
               message: 'Something went wrong with server, try again later',
             ),
           );
@@ -427,17 +157,17 @@ class NetworkHelperImpl extends NetworkHelper {
         // onGettingServerException(_extractErrorMessage(errorJson));
         return Right(
           GenericError(
-            status: false,
+            statusCode: statusCode,
             message: _extractErrorMessage(errorJson) ??
                 'Something went wrong with server, try again later',
           ),
         );
       }
-      final errorJson = jsonDecode(response.body);
+      final errorJson = response.body;
       return Right(
         GenericError(
-          status: false,
-          message: _extractErrorMessage(errorJson),
+          statusCode: statusCode,
+          message: errorJson.toString(),
         ),
       );
     } else {
@@ -455,8 +185,8 @@ class NetworkHelperImpl extends NetworkHelper {
         final errorJson = jsonDecode(response.body);
         return Right(
           GenericError(
-            status: false,
-            message: _extractErrorMessage(errorJson),
+            statusCode: 404,
+            message: errorJson,
           ),
         );
       }
@@ -497,9 +227,9 @@ class NetworkHelperImpl extends NetworkHelper {
   Future<bool> _checkInternetConnection() async {
     try {
       final response =
-      await http.get(Uri.parse('https://www.google.com')).timeout(
-        const Duration(seconds: 5),
-      );
+          await http.get(Uri.parse('https://www.google.com')).timeout(
+                const Duration(seconds: 5),
+              );
       if (response.statusCode == 200) {
         return true;
       } else {
@@ -511,5 +241,4 @@ class NetworkHelperImpl extends NetworkHelper {
   }
 
   void _clientExceptionLogs(dynamic e) {}
-
 }
