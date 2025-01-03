@@ -4,7 +4,6 @@ import '../../../../export.dart';
 
 Future<void> initializeDataLayerDependencies({
   required Function onTokenExpire,
-  required Function(String exception) onGettingServerException,
   required http.Client client,
   required Dio dio,
   required Function onClientExpire,
@@ -16,9 +15,6 @@ Future<void> initializeDataLayerDependencies({
         dio: dio,
         client: client,
         onTokenExpire: onTokenExpire,
-        onGettingServerException: (exception) => onGettingServerException(
-          exception,
-        ),
       ),
       initializeRepoDependencies(),
     ],

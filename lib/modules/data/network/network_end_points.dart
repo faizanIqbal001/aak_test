@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-String baseUrl ='https://django-dev.aakscience.com/';
+String baseUrl ='https://django-dev.aakscience.com';
 
 class NetworkEndPoints {
   static String discountBaseUrl = baseUrl;

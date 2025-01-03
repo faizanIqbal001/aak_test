@@ -17,41 +17,6 @@ abstract class NetworkHelper {
     bool encodeBody,
   });
 
-  Future<Either<String, GenericError>> patch(
-    String url, {
-    Map<String, String>? headers,
-    dynamic body,
-    dynamic encoding,
-    bool modifyHeader = true,
-    bool encodeBody = true,
-  });
-
-  Future<Either<String, GenericError>> multipart(
-    String url, {
-    Map<String, String>? headers,
-    dynamic body,
-    dynamic files,
-  });
-
-  Future<Either<Map<String, dynamic>, GenericError>> multipartWithDio(
-    String url, {
-    dynamic formData,
-    String header,
-  });
-
-  Future<Either<String, GenericError>> delete(
-    String url, {
-    Map<String, String>? headers,
-    dynamic body,
-  });
-
-  Future<Either<String, GenericError>> put(
-    String url, {
-    Map<String, String>? headers,
-    dynamic body,
-    dynamic encoding,
-  });
-
   Future<Map<String, String>> appendHeader({
     Map<String, String>? headers,
     String url,
